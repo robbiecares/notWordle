@@ -1,6 +1,6 @@
 const data = (() => {
     
-    const secretWord = 'errie'
+    const secretWord = 'kkllm'
     let attempts = 0
     let  wrongLetters = []
     
@@ -94,7 +94,7 @@ const displayController = (() => {
 
     function backLogic() {
         if (currentGuess.slice(-1)) {
-            currentGuess = currentGuess.slice(-1)
+            currentGuess = currentGuess.slice(0,-1)
             displayCurrentGuess()
         }
     }
@@ -133,7 +133,7 @@ const displayController = (() => {
         let i = 0
         for (i; i < array.length; i++) {
             if (array[i] == letter) {
-                return array[i];
+                return i;
             }
         }
         return false;
@@ -143,32 +143,44 @@ const displayController = (() => {
 
     function checkGuess() {
 
-        let formatttedGuess = currentGuess.toLowerCase()
-        let secretWord = data.secretWord.split('')
+        let formattedGuess = currentGuess.toLowerCase().split('');
+        let secretWord = data.secretWord.split('');
+        let i = 0;
+        const guesssTile = function(i) {
+            return activeRow.childNodes[i]
+        }
+        let wordBankTile = document.getElementById(formattedGuess[i].toUpperCase())
         
-        for (i=0; i < formatttedGuess.length; i++) {
-            let guessedLetter = formatttedGuess[i]
-            let tile = activeRow.childNodes[i]
-            if (guessedLetter === secretWord[i]) {
-                tile.classList.add('correctly-placed')
+        // a pass for correct letters in the correct location
+        for (i = 0; i < formattedGuess.length; i++) {
+            if (formattedGuess[i] === secretWord[i]) {
+                guesssTile(i).classList.add('correctly-placed')
+                wordBankTile.classList.add('correctly-placed')
                 secretWord[i] = undefined
-            } else if (_letterInSecretWord(secretWord, guessedLetter) !== false) {
-                let index = _letterInSecretWord(secretWord, guessedLetter)
-                tile.classList.add('incorrectly-placed')
-                secretWord[index] = undefined
-            } else {
-                tile.classList.add('not-in')
-                data.wrongLetters.push(guessedLetter)
+                formattedGuess[i] = undefined
             }
+        }   
+        for (i = 0; i < formattedGuess.length; i++) {
+            let index = _letterInSecretWord(secretWord, formattedGuess[i])
+            if (formattedGuess[i]) {
+                if (index === false) {
+                    guesssTile(i).classList.add('not-in')
+                    wordBankTile.classList.add('not-in')
+                    data.wrongLetters.push(formattedGuess[i])
+                } else {    
+                    guesssTile(i).classList.add('incorrectly-placed')
+                    wordBankTile.classList.add('incorrectly-placed')
+                    secretWord[index] = undefined
+                    formattedGuess[i] = undefined
+                }
+            }   
         }
     }
-
 
 
     function displayCurrentGuess() {
         // Displays the current guess in the appropriate row of the guess area.
         
-        console.log(currentGuess)
         space = activeRow.childNodes
         for (i = 0; i < 5; i++) {
             space[i].innerHTML = currentGuess[i] || ''
@@ -199,3 +211,6 @@ function main() {
 }
 
 main()
+
+// stopped at: bug in highlighting correctly placed letter.
+    // word = kkllm, guess = mooom. first m is highlighted yellow, last m is grey

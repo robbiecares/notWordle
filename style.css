@@ -87,6 +87,7 @@ body {
     width: 100%;
 }
 
+
 .letter-bank-tile {
     /* border: 1px solid black; */
     padding: 1rem;
@@ -94,16 +95,16 @@ body {
     font-size: 2.5rem;
 }
 
-.correctly-placed {
-    background-color: green;    
+.not-in {
+    background-color: darkgrey;    
 }
 
 .incorrectly-placed {
     background-color: yellow;    
 }
 
-.not-in {
-    background-color: darkgrey;    
+.correctly-placed {
+    background-color: green;    
 }
 
 footer {
