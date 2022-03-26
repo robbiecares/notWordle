@@ -75,35 +75,37 @@ const displayController = (() => {
     
     const resetBtn = document.getElementById('reset')
     resetBtn.addEventListener('click', resetLogic)
-    
-    const modeSelector = document.getElementById('mode-selector')
-    modeSelector.addEventListener('change', modeSelectorLogic)
 
     const wordListBtn = document.getElementById('word-list')
     wordListBtn.addEventListener('click', wordBtnLogic)
     wordListBtn.style.display = 'none'
 
+    const modeSelector = document.getElementById('mode-selector')
+    modeSelector.addEventListener('change', modeSelectorLogic)
+
     const modal = document.getElementById('modal')
     document.getElementById('modal-close').addEventListener('click', () => modal.style.display = "none")
 
     let letters;
-    let currentGuess = '';
+    let guessTiles;
+    let currentGuess;
     const activeRow = function() {
         return guessArea.childNodes[data.attempts]
     }
 
     function createGuessArea() {
         for (i = 0; i < 6; i++) {
-            let guessRow = document.createElement('div')
-            guessRow.classList.add('guess-area-row')
-            guessArea.appendChild(guessRow)
+            let row = document.createElement('div')
+            row.classList.add('guess-area-row')
+            guessArea.appendChild(row)
             for (j = 0; j < 5; j++) {
-                let guessTile = document.createElement('div')
-                guessTile.classList.add('guess-area-tile')
-                guessRow.appendChild(guessTile)
+                let tile = document.createElement('div')
+                tile.classList.add('guess-area-tile')
+                row.appendChild(tile)
             }
         }
-        // activeRow = guessArea.firstChild
+        guessTiles = document.querySelectorAll('.guess-area-tile')
+        currentGuess = ''
     }
 
 
@@ -128,7 +130,7 @@ const displayController = (() => {
         }
 
         letters = document.querySelectorAll('.letter-bank-tile')
-        letters.forEach(letter => letter.addEventListener('click', letterClick))
+        letters.forEach(letter => letter.addEventListener('click', clickLetterBankLetter))
 
         const lastRow = letterBank.lastChild
 
@@ -146,9 +148,9 @@ const displayController = (() => {
     }
  
 
-    function letterClick(e) {
+    function clickLetterBankLetter(e) {
         if (currentGuess.length < 5) {
-            currentGuess = currentGuess + e.target.innerHTML
+            currentGuess += e.target.innerHTML
         }
         displayCurrentGuess()
     }
@@ -172,25 +174,44 @@ const displayController = (() => {
 
     function enterLogic() {
         modeSelector.disabled = true
-        if (modeSelector.value === 'play') {
-            let guess = currentGuess.toLowerCase()
-            // if (guess.length === 5 && data.wordBank.includes(guess)) {
-            if (guess.length === 5) {
+        let guess = currentGuess.toLowerCase()        
+        // if (guess.length === 5 && data.wordBank.includes(guess)) {
+        if (guess.length === 5) {
+            if (modeSelector.value === 'solve') {
+                
+            } else {
+                
                 checkGuess()
                 data.attempts++
                 main.reviewStatus(guess)
                 currentGuess = ''
+                }
             }
-        } else {
-
-        }
         
     }
 
 
     function modeSelectorLogic() {
         
-        wordListBtn.style.display = modeSelector.value === 'solve' ? 'flex' : 'none';
+        let visibility;
+
+        if (modeSelector.value === 'solve') {
+            visibility = 'flex';
+            guessTiles.forEach(tile => {
+                tile.addEventListener('click', toggleLetterStatus);
+                tile.classList.add('not-in')
+            })
+        } else {
+            visibility = 'none';
+            guessTiles.forEach(tile => {
+                tile.removeEventListener('click', toggleLetterStatus);
+                tile.className = '';
+                tile.classList.add('guess-area-tile')
+
+
+            })            
+        }
+        wordListBtn.style.display = visibility       
     }
 
 
@@ -237,8 +258,8 @@ const displayController = (() => {
         // pass for correct letters in the correct location
         for (i = 0; i < formattedGuess.length; i++) {
             if (formattedGuess[i] === secretWord[i]) {
-                guessTile(i).classList.add('correctly-placed')
-                wordBankTile(i).classList.add('correctly-placed')
+                guessTile(i).classList.add('correct')
+                wordBankTile(i).classList.add('correct')
                 data.confirmedLetters[i] = formattedGuess[i]
                 formattedGuess[i] = undefined
                 secretWord[i] = undefined
@@ -253,8 +274,8 @@ const displayController = (() => {
                     wordBankTile(i).classList.add('not-in')
                     data.addToNotInWord(formattedGuess[i])
                 } else {    
-                    guessTile(i).classList.add('incorrectly-placed')
-                    wordBankTile(i).classList.add('incorrectly-placed')
+                    guessTile(i).classList.add('misplaced')
+                    wordBankTile(i).classList.add('misplaced')
                     data.incorrectPosition[i] += formattedGuess[i]
                     formattedGuess[i] = undefined
                     secretWord[index] = undefined
@@ -264,6 +285,24 @@ const displayController = (() => {
     }
 
 
+    function toggleLetterStatus() {
+        
+        if (this.innerHTML) {
+            classes = ['not-in', 'misplaced', 'correct'];
+            let current = this.classList;
+            current.forEach(c => {
+                if (classes.includes(c)) {
+                    let i = classes.indexOf(c)
+                    this.classList.remove(c)
+                    i = (i === 2) ? 0 : i + 1
+                    this.classList.add(classes[i])            
+                };
+            });
+        }
+
+    }
+
+    
     function displayCurrentGuess() {
         // Displays the current guess in the appropriate row of the guess area.
         
@@ -273,14 +312,13 @@ const displayController = (() => {
         }
     }
 
-
     return {
         createGuessArea,
         createLetterBank,
         guessArea,
-        showModal
+        showModal,
+        modeSelectorLogic
     }
-    
 })();
 
 
@@ -297,6 +335,7 @@ const main = (() => {
         displayController.createGuessArea()
         displayController.createLetterBank()
         data.setData()
+        displayController.modeSelectorLogic()
         
         // set gameplay flag
         activeGame = true
