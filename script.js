@@ -1,20 +1,68 @@
 const data = (() => {
     
-    const secretWord = 'kkllm'
-    let attempts = 0
-    let  wrongLetters = []
+    let wordBank = ['abate', 'apple', 'bread', 'depot', 'purge', 'renew', 'reeds'];
+    let secretWord;
+    let attempts;
+    let notInWord;
+    let incorrectPosition;
+    let confirmedLetters;
     
-    function isWord(word) {
-        // Confirms word is in the list of valid words.
-        
-        return true
+    function setData() {
+        // Creates the data structures for a new game.
+
+        this.secretWord = wordBank[Math.floor(Math.random() * wordBank.length)];
+        this.attempts = 0;
+        this.notInWord = '';
+        this.incorrectPosition = ['', '', '', '', ''];
+        this.confirmedLetters = ['', '', '', '', ''];
     }
 
+    // function createWordBank () {
+
+    //     const testElem = document.createElement('span')
+    //     testElem.setAttribute('id', 'test-elem')
+    //     console.log(testElem)
+    //     document.body.appendChild(testElem)
+
+    //     function reqListener () {            
+    //         testElem.innerHTML = this.responseText;
+    //         console.log(testElem)
+    //       }
+        
+    //     const oReq = new XMLHttpRequest();
+    //     oReq.onreadystatechange = function() {
+    //         if (oReq.readyState == 4 && oReq.status == 200) {
+    //             document.getElementById('test-elem').innerHTML = oReq.responseText
+    //         }
+    //     }
+    //     oReq.open("GET", "fiveLetterWords.txt");
+    //     oReq.send();
+
+    //     // let wordBank = testElem.innerHTML
+    //     console.log(testElem)
+        
+        
+    
+    // }
+
+    function addToNotInWord(l) {
+        // Adds a letter to 'notInWord' is it's not already there.      
+        
+        if (!this.notInWord.includes(l)) {
+            this.notInWord += l
+        }
+    } 
+      
     return {
-        secretWord,
-        isWord,
         attempts,
-        wrongLetters
+        // createWordBank,
+        secretWord,
+        wordBank,
+        notInWord,
+        addToNotInWord,
+        incorrectPosition,
+        confirmedLetters,
+        setData
     }
 
 })();
@@ -24,9 +72,13 @@ const displayController = (() => {
 
     const guessArea = document.getElementById('guess-area')
     const letterBank = document.getElementById('letter-bank')
-    let letters
+    const resetbtn = document.getElementById('reset')
+    resetbtn.addEventListener('click', resetLogic)
+    let letters;
     let currentGuess = ''
-    let activeRow
+    const activeRow = function() {
+        return guessArea.childNodes[data.attempts]
+    }
 
 
     function createGuessArea() {
@@ -40,7 +92,7 @@ const displayController = (() => {
                 guessRow.appendChild(guessTile)
             }
         }
-        activeRow = guessArea.firstChild
+        // activeRow = guessArea.firstChild
     }
 
 
@@ -87,58 +139,45 @@ const displayController = (() => {
         if (currentGuess.length < 5) {
             currentGuess = currentGuess + e.target.innerHTML
         }
-        // console.log(e.target.innerHTML)        
         displayCurrentGuess()
     }
     
 
     function backLogic() {
-        if (currentGuess.slice(-1)) {
+        if (main.isActiveGame() && currentGuess.slice(-1)) {
             currentGuess = currentGuess.slice(0,-1)
             displayCurrentGuess()
         }
     }
 
+    function resetLogic() {
+        guessArea.innerHTML = ''
+        letterBank.innerHTML = ''
+        main.setupGame()
+    }
 
     function enterLogic() {
-        if (currentGuess.length === 5 && data.isWord(currentGuess)) {
-            data.attempts++
+        let guess = currentGuess.toLowerCase()
+        // if (guess.length === 5 && data.wordBank.includes(guess)) {
+        if (guess.length === 5) {
             checkGuess()
-            if (currentGuess.toLowerCase() === data.secretWord) {
-                console.log('you win!')
-            } else if (data.attempts > 5) {
-                console.log('better luck tomorrow!')
-            } else {
-                currentGuess = ''
-                activeRow = guessArea.childNodes[data.attempts]
-            }    
+            data.attempts++
+            main.reviewStatus(guess)
+            currentGuess = ''
         }
     }
 
-
     var _letterInSecretWord = function(array, letter) {
+        // Returns the indx of the letter in the array or false is not present.
         
-        
-
-        for (j; j < array.length; j++) {
-            if (array[j] == letter) {
+        for (j=0; j < array.length; j++) {
+            if (array[j] === letter) {
                 return j;
             }
         }
         return false;
-    }
 
-    var _letterInSecretWord = function(array, letter) {
-        
-        let i = 0
-        for (i; i < array.length; i++) {
-            if (array[i] == letter) {
-                return i;
-            }
-        }
-        return false;
     }
-
 
 
     function checkGuess() {
@@ -146,32 +185,37 @@ const displayController = (() => {
         let formattedGuess = currentGuess.toLowerCase().split('');
         let secretWord = data.secretWord.split('');
         let i = 0;
-        const guesssTile = function(i) {
-            return activeRow.childNodes[i]
+        const guessTile = function(i) {
+            return activeRow().childNodes[i]
         }
-        let wordBankTile = document.getElementById(formattedGuess[i].toUpperCase())
+        const wordBankTile = function(i) {
+            return document.getElementById(formattedGuess[i].toUpperCase())
+        }
         
-        // a pass for correct letters in the correct location
+        // pass for correct letters in the correct location
         for (i = 0; i < formattedGuess.length; i++) {
             if (formattedGuess[i] === secretWord[i]) {
-                guesssTile(i).classList.add('correctly-placed')
-                wordBankTile.classList.add('correctly-placed')
-                secretWord[i] = undefined
+                guessTile(i).classList.add('correctly-placed')
+                wordBankTile(i).classList.add('correctly-placed')
+                data.confirmedLetters[i] = formattedGuess[i]
                 formattedGuess[i] = undefined
+                secretWord[i] = undefined
             }
         }   
+        // pass for correct letters in wrong location and incorrect letters
         for (i = 0; i < formattedGuess.length; i++) {
             let index = _letterInSecretWord(secretWord, formattedGuess[i])
             if (formattedGuess[i]) {
                 if (index === false) {
-                    guesssTile(i).classList.add('not-in')
-                    wordBankTile.classList.add('not-in')
-                    data.wrongLetters.push(formattedGuess[i])
+                    guessTile(i).classList.add('not-in')
+                    wordBankTile(i).classList.add('not-in')
+                    data.addToNotInWord(formattedGuess[i])
                 } else {    
-                    guesssTile(i).classList.add('incorrectly-placed')
-                    wordBankTile.classList.add('incorrectly-placed')
-                    secretWord[index] = undefined
+                    guessTile(i).classList.add('incorrectly-placed')
+                    wordBankTile(i).classList.add('incorrectly-placed')
+                    data.incorrectPosition[i] += formattedGuess[i]
                     formattedGuess[i] = undefined
+                    secretWord[index] = undefined
                 }
             }   
         }
@@ -181,7 +225,7 @@ const displayController = (() => {
     function displayCurrentGuess() {
         // Displays the current guess in the appropriate row of the guess area.
         
-        space = activeRow.childNodes
+        let space = activeRow().childNodes
         for (i = 0; i < 5; i++) {
             space[i].innerHTML = currentGuess[i] || ''
         }
@@ -201,16 +245,60 @@ const displayController = (() => {
 })();
 
 
-function main() {
+const main = (() => {
 
-    // initialize display
-    displayController.createGuessArea()
-    displayController.createLetterBank()
+    let activeGame;
+
+    function setupGame() {
+        // sets variables and call functions required for starting a new game.
+        
+        // create page
+        displayController.createGuessArea()
+        displayController.createLetterBank()
+        data.setData()
+        
+        // set gameplay flag
+        activeGame = true
+    }
     
 
-}
+    function reviewStatus(guess) {
+        // Checks the game for win coniditions. if present 
+        if (guess === data.secretWord) {
+            console.log('you win!')
+            activeGame = false
+        } else if (data.attempts > 5) {
+            console.log('better luck next time!')
+            activeGame = false
+        } else {
+            currentGuess = ''
+        }    
+    }
 
-main()
 
-// stopped at: bug in highlighting correctly placed letter.
-    // word = kkllm, guess = mooom. first m is highlighted yellow, last m is grey
+    function isActiveGame() {
+        return activeGame
+    }
+    
+    return {
+        isActiveGame,
+        reviewStatus,
+        setupGame
+    }
+
+})()
+
+main.setupGame()
+
+
+// bug: back button still works after a solve
+// todo: rework guess tile logic so that click will set the color
+    // and use the color as feedback for finding the word
+// create play and solve modes for the game
+
+
+// stopped at:
+    // creating modal for endgame status
+
+
+
