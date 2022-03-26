@@ -72,10 +72,15 @@ const displayController = (() => {
 
     const guessArea = document.getElementById('guess-area')
     const letterBank = document.getElementById('letter-bank')
+    
     const resetbtn = document.getElementById('reset')
     resetbtn.addEventListener('click', resetLogic)
+    
+    const modal = document.getElementById('modal')
+    document.getElementById('modal-close').addEventListener('click', () => modal.style.display = "none")
+
     let letters;
-    let currentGuess = ''
+    let currentGuess = '';
     const activeRow = function() {
         return guessArea.childNodes[data.attempts]
     }
@@ -150,11 +155,13 @@ const displayController = (() => {
         }
     }
 
+
     function resetLogic() {
         guessArea.innerHTML = ''
         letterBank.innerHTML = ''
         main.setupGame()
     }
+
 
     function enterLogic() {
         let guess = currentGuess.toLowerCase()
@@ -165,6 +172,14 @@ const displayController = (() => {
             main.reviewStatus(guess)
             currentGuess = ''
         }
+    }
+
+    function showModal(message) {
+        // Accesses the modal.
+
+        modal.style.display = "flex"
+        document.getElementById('modal-text').innerHTML = message
+
     }
 
     var _letterInSecretWord = function(array, letter) {
@@ -232,14 +247,11 @@ const displayController = (() => {
     }
 
 
-    function updateDisplay() {
-        
-    }
-
     return {
         createGuessArea,
         createLetterBank,
-        guessArea
+        guessArea,
+        showModal
     }
     
 })();
@@ -248,6 +260,8 @@ const displayController = (() => {
 const main = (() => {
 
     let activeGame;
+    const modal = displayController.modal
+
 
     function setupGame() {
         // sets variables and call functions required for starting a new game.
@@ -265,10 +279,10 @@ const main = (() => {
     function reviewStatus(guess) {
         // Checks the game for win coniditions. if present 
         if (guess === data.secretWord) {
-            console.log('you win!')
+            displayController.showModal('You win!')
             activeGame = false
         } else if (data.attempts > 5) {
-            console.log('better luck next time!')
+            displayController.showModal('the word was ' + data.secretWord.toUpperCase())
             activeGame = false
         } else {
             currentGuess = ''
@@ -296,9 +310,6 @@ main.setupGame()
     // and use the color as feedback for finding the word
 // create play and solve modes for the game
 
-
-// stopped at:
-    // creating modal for endgame status
 
 
 
