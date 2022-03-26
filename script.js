@@ -73,9 +73,16 @@ const displayController = (() => {
     const guessArea = document.getElementById('guess-area')
     const letterBank = document.getElementById('letter-bank')
     
-    const resetbtn = document.getElementById('reset')
-    resetbtn.addEventListener('click', resetLogic)
+    const resetBtn = document.getElementById('reset')
+    resetBtn.addEventListener('click', resetLogic)
     
+    const modeSelector = document.getElementById('mode-selector')
+    modeSelector.addEventListener('change', modeSelectorLogic)
+
+    const wordListBtn = document.getElementById('word-list')
+    wordListBtn.addEventListener('click', wordBtnLogic)
+    wordListBtn.style.display = 'none'
+
     const modal = document.getElementById('modal')
     document.getElementById('modal-close').addEventListener('click', () => modal.style.display = "none")
 
@@ -84,7 +91,6 @@ const displayController = (() => {
     const activeRow = function() {
         return guessArea.childNodes[data.attempts]
     }
-
 
     function createGuessArea() {
         for (i = 0; i < 6; i++) {
@@ -160,19 +166,39 @@ const displayController = (() => {
         guessArea.innerHTML = ''
         letterBank.innerHTML = ''
         main.setupGame()
+        modeSelector.disabled = false
     }
 
 
     function enterLogic() {
-        let guess = currentGuess.toLowerCase()
-        // if (guess.length === 5 && data.wordBank.includes(guess)) {
-        if (guess.length === 5) {
-            checkGuess()
-            data.attempts++
-            main.reviewStatus(guess)
-            currentGuess = ''
+        modeSelector.disabled = true
+        if (modeSelector.value === 'play') {
+            let guess = currentGuess.toLowerCase()
+            // if (guess.length === 5 && data.wordBank.includes(guess)) {
+            if (guess.length === 5) {
+                checkGuess()
+                data.attempts++
+                main.reviewStatus(guess)
+                currentGuess = ''
+            }
+        } else {
+
         }
+        
     }
+
+
+    function modeSelectorLogic() {
+        
+        wordListBtn.style.display = modeSelector.value === 'solve' ? 'flex' : 'none';
+    }
+
+
+    function wordBtnLogic() {
+        showModal()
+
+    }
+
 
     function showModal(message) {
         // Accesses the modal.
@@ -182,7 +208,8 @@ const displayController = (() => {
 
     }
 
-    var _letterInSecretWord = function(array, letter) {
+
+    const _letterInSecretWord = function(array, letter) {
         // Returns the indx of the letter in the array or false is not present.
         
         for (j=0; j < array.length; j++) {
