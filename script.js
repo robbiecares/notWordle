@@ -4,7 +4,7 @@ const data = (() => {
     let secretWord;
     let attempts;
     let notInWord;
-    let incorrectPosition;
+    let misplacedLetters;
     let confirmedLetters;
     
     function setData() {
@@ -13,7 +13,7 @@ const data = (() => {
         this.secretWord = wordBank[Math.floor(Math.random() * wordBank.length)];
         this.attempts = 0;
         this.notInWord = '';
-        this.incorrectPosition = ['', '', '', '', ''];
+        this.misplacedLetters = ['', '', '', '', ''];
         this.confirmedLetters = ['', '', '', '', ''];
     }
 
@@ -53,6 +53,12 @@ const data = (() => {
         }
     } 
       
+
+    function searchWordList() {
+
+    }
+
+
     return {
         attempts,
         // createWordBank,
@@ -60,9 +66,10 @@ const data = (() => {
         wordBank,
         notInWord,
         addToNotInWord,
-        incorrectPosition,
+        misplacedLetters,
         confirmedLetters,
-        setData
+        setData,
+        searchWordList
     }
 
 })();
@@ -89,10 +96,11 @@ const displayController = (() => {
     let letters;
     let guessTiles;
     let currentGuess;
-    const activeRow = function() {
-        return guessArea.childNodes[data.attempts]
-    }
-
+    const activeRow = () => {return guessArea.childNodes[data.attempts]}
+    const guessTile = (i) => {return activeRow().childNodes[i]}
+    const wordBankTile = (i) => {return document.getElementById(formattedGuess[i].toUpperCase())}
+    
+    
     function createGuessArea() {
         for (i = 0; i < 6; i++) {
             let row = document.createElement('div')
@@ -164,30 +172,28 @@ const displayController = (() => {
     }
 
 
-    function resetLogic() {
-        guessArea.innerHTML = ''
-        letterBank.innerHTML = ''
-        main.setupGame()
-        modeSelector.disabled = false
-    }
-
-
     function enterLogic() {
         modeSelector.disabled = true
         let guess = currentGuess.toLowerCase()        
         // if (guess.length === 5 && data.wordBank.includes(guess)) {
         if (guess.length === 5) {
             if (modeSelector.value === 'solve') {
-                
-            } else {
-                
-                checkGuess()
-                data.attempts++
-                main.reviewStatus(guess)
-                currentGuess = ''
-                }
+                analyzeInput()
+            } else {   
+                checkGuess()        
             }
-        
+        data.attempts++
+        main.reviewStatus(guess)
+        currentGuess = ''
+        }
+    }
+
+
+    function resetLogic() {
+        guessArea.innerHTML = ''
+        letterBank.innerHTML = ''
+        main.setupGame()
+        modeSelector.disabled = false
     }
 
 
@@ -207,8 +213,6 @@ const displayController = (() => {
                 tile.removeEventListener('click', toggleLetterStatus);
                 tile.className = '';
                 tile.classList.add('guess-area-tile')
-
-
             })            
         }
         wordListBtn.style.display = visibility       
@@ -217,7 +221,6 @@ const displayController = (() => {
 
     function wordBtnLogic() {
         showModal()
-
     }
 
 
@@ -230,16 +233,14 @@ const displayController = (() => {
     }
 
 
-    const _letterInSecretWord = function(array, letter) {
+    function _letterInSecretWord(array, letter) {
         // Returns the indx of the letter in the array or false is not present.
-        
-        for (j=0; j < array.length; j++) {
+        for (j = 0; j < array.length; j++) {
             if (array[j] === letter) {
                 return j;
             }
         }
         return false;
-
     }
 
 
@@ -248,9 +249,6 @@ const displayController = (() => {
         let formattedGuess = currentGuess.toLowerCase().split('');
         let secretWord = data.secretWord.split('');
         let i = 0;
-        const guessTile = function(i) {
-            return activeRow().childNodes[i]
-        }
         const wordBankTile = function(i) {
             return document.getElementById(formattedGuess[i].toUpperCase())
         }
@@ -276,11 +274,29 @@ const displayController = (() => {
                 } else {    
                     guessTile(i).classList.add('misplaced')
                     wordBankTile(i).classList.add('misplaced')
-                    data.incorrectPosition[i] += formattedGuess[i]
+                    data.misplacedLetters[i] += formattedGuess[i]
                     formattedGuess[i] = undefined
                     secretWord[index] = undefined
                 }
             }   
+        }
+    }
+
+
+    function analyzeInput() {
+
+        // for each tile
+        for (i = 0; i < 5; i++) {
+            let classes = Array.from(guessTile(i).classList)
+            let letter = guessTile(i).innerHTML.toLowerCase()          
+             
+            if(classes.includes('correct')) {
+                data.confirmedLetters[i] = letter
+            } else if (classes.includes('misplaced')) {
+                data.misplacedLetters[i] += letter
+            } else if (classes.includes('not-in')) {
+                data.notInWord += letter
+            }
         }
     }
 
@@ -302,7 +318,7 @@ const displayController = (() => {
 
     }
 
-    
+
     function displayCurrentGuess() {
         // Displays the current guess in the appropriate row of the guess area.
         
@@ -371,11 +387,8 @@ const main = (() => {
 main.setupGame()
 
 
-// bug: back button still works after a solve
 // todo: rework guess tile logic so that click will set the color
     // and use the color as feedback for finding the word
-// create play and solve modes for the game
 
-
-
+    // stopped at: need to factor out word bank letter coloring for both game modes
 
