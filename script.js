@@ -1,6 +1,7 @@
 const data = (() => {
     
     let wordBank = ['abate', 'apple', 'bread', 'depot', 'purge', 'renew', 'reeds'];
+    let remainingWords = [...wordBank]
     let secretWord;
     let attempts;
     let notInWord;
@@ -64,6 +65,7 @@ const data = (() => {
         // createWordBank,
         secretWord,
         wordBank,
+        remainingWords,
         notInWord,
         addToNotInWord,
         misplacedLetters,
@@ -83,12 +85,14 @@ const displayController = (() => {
     const resetBtn = document.getElementById('reset')
     resetBtn.addEventListener('click', resetLogic)
 
-    const wordListBtn = document.getElementById('word-list')
+    const wordListBtn = document.getElementById('show-words')
     wordListBtn.addEventListener('click', wordBtnLogic)
     wordListBtn.style.display = 'none'
 
     const modeSelector = document.getElementById('mode-selector')
     modeSelector.addEventListener('change', modeSelectorLogic)
+
+    const wordCount = document.getElementById('word-count')
 
     const modal = document.getElementById('modal')
     document.getElementById('modal-close').addEventListener('click', () => modal.style.display = "none")
@@ -199,13 +203,12 @@ const displayController = (() => {
                 if (data.attempts < 5) {
                     displayGuess(activeRow(data.attempts+1))
                 }
+                wordCount.innerHTML = data.remainingWords.length
             } else {   
                 playModeRoundReview()   
                 main.reviewStatus(guess)     
                 guess = Array(5).fill(undefined)
             }
-        data.attempts++
-        
         }
     }
 
@@ -227,6 +230,8 @@ const displayController = (() => {
             guessTiles.forEach(tile => {
                 tile.addEventListener('click', toggleLetterStatus);
                 tile.classList.add('not-in')
+                wordCount.innerHTML = data.remainingWords.length
+            
             })
         } else {
             visibility = 'none';
@@ -236,7 +241,7 @@ const displayController = (() => {
                 tile.classList.add('guess-area-tile')
             })            
         }
-        wordListBtn.style.display = visibility       
+        document.querySelectorAll('.solve-mode').forEach(elem => elem.style.display = visibility)
     }
 
 
@@ -267,30 +272,30 @@ const displayController = (() => {
 
     function playModeRoundReview() {
 
-        // let formattedGuess = currentGuess.toLowerCase().split('');
+        let roundGuess = [...guess]
         let secretWord = data.secretWord.split('');
         let i = 0;
         // const guessedLetter = (i) => {return guess[i]};
         // pass for correct letters in the correct location
-        for (i = 0; i < guess.length; i++) {
-            if (guess[i] === secretWord[i]) {
+        for (i = 0; i < roundGuess.length; i++) {
+            if (roundGuess[i] === secretWord[i]) {
                 guessTile(i).classList.add('correct')
-                wordBankTile(guess[i]).classList.add('correct')
-                guess[i] = undefined
+                wordBankTile(roundGuess[i]).classList.add('correct')
+                roundGuess[i] = undefined
                 secretWord[i] = undefined
             }
         }   
         // pass for correct letters in wrong location and incorrect letters
-        for (i = 0; i < guess.length; i++) {
-            let index = _letterInSecretWord(secretWord, guess[i])
-            if (guess[i]) {
+        for (i = 0; i < roundGuess.length; i++) {
+            let index = _letterInSecretWord(secretWord, roundGuess[i])
+            if (roundGuess[i]) {
                 if (index === false) {
                     guessTile(i).classList.add('not-in')
-                    wordBankTile(guess[i]).classList.add('not-in')
+                    wordBankTile(roundGuess[i]).classList.add('not-in')
                 } else {    
                     guessTile(i).classList.add('misplaced')
-                    wordBankTile(guess[i]).classList.add('misplaced')
-                    guess[i] = undefined
+                    wordBankTile(roundGuess[i]).classList.add('misplaced')
+                    roundGuess[i] = undefined
                     secretWord[index] = undefined
                 }
             }   
@@ -385,9 +390,11 @@ const main = (() => {
         if (guess.join('') === data.secretWord) {
             displayController.showModal('You win!')
             activeGame = false
-        } else if (data.attempts > 5) {
+        } else if (data.attempts > 4) {
             displayController.showModal('the word was ' + data.secretWord.toUpperCase())
             activeGame = false  
+        } else {
+            data.attempts++
         }
     }
 
@@ -407,9 +414,11 @@ const main = (() => {
 main.setupGame()
 
 
-// idea: remove or hide letter of wordbank tile for any 'not-in' letters
+// idea: solve mode - make wordbank tiles for any 'not-in' letters unclickable or 
+// not respond to click
+
 // todo: set gameover logic for solve mode
 
-// stopped at: ...
+// stopped at: ...ready to start reducing wordbank
 
 

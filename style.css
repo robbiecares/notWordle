@@ -32,39 +32,43 @@ body {
 
 #controls {
     display: flex;
-    justify-content: space-evenly;
-    align-items: stretch;
-    
 }
 
 #controls > * {
     flex: 1;
+}
+
+.left-column {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* border: 1px solid red; */
+
+}
+
+.left-column > * {
+    justify-content: space-evenly;
+    /* border: 1px solid green; */
+}
+
+#words-remaining {
+    /* border: 1px solid BLUE; */
+    gap: 2rem;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#word-count {
+    font-size: 2rem;
+    min-width: 4.5rem;
+}
+
+.right-column {
     display: flex;
     justify-content: center;
     align-content: center;
     align-items: center;
     flex-flow: column;
-}
-
-.left-column {
-    
-
-}
-
-.right-column {
-    /* display: flex;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    flex-flow: column; */
-    
-
-}
-
-#reset {
-    align-self: center;
-
-
 }
 
 #guess-area {
