@@ -50,12 +50,15 @@ const data = (() => {
     // }
 
 
-    function addToNotInWord(l) {
-        // Adds a letter to 'notInWord' is it's not already there.      
+    function createSet(check, addTo) {
+        // Adds a each element of 'check' to string 'addTo' if the element is not already included.      
         
-        if (!this.notInWord.includes(l)) {
-            this.notInWord += l
+        for (let l of check) {
+            if (!addTo.includes(l)) {
+                addTo += l
+            }
         }
+        return addTo
     } 
       
 
@@ -64,7 +67,8 @@ const data = (() => {
         
         let pattern = ''
         for (i=0; i < 5; i++) {
-            pattern += data.confirmed[i] ? data.confirmed[i] : '[' + '^' + data.notIncluded + data.misplaced[i] + ']'
+            let set = createSet(data.misplaced[i], data.notIncluded)
+            pattern += data.confirmed[i] ? data.confirmed[i] : '[' + '^' + set + ']'
         }
         return new RegExp(pattern)
     }
@@ -72,10 +76,11 @@ const data = (() => {
 
     function searchWordList() {
         
-        console.log(possibleWords)
+        console.log(this.possibleWords)
         const regex = createPattern()
+        console.log(regex)
         this.possibleWords = possibleWords.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLettters(possibleWord))
-        console.log(possibleWords)
+        console.log(this.possibleWords)
     }
 
     function containsMisplacedLettters(word) {
@@ -90,7 +95,7 @@ const data = (() => {
         wordBank,
         possibleWords,
         notIncluded,
-        addToNotInWord,
+        createSet,
         misplaced,
         confirmed,
         setData,
@@ -225,7 +230,7 @@ const displayController = (() => {
                 main.reviewStatus(guess)
                 guess = [...data.confirmed]
                 // prefill confirmed letters in next activeRow
-                if (data.attempts < 5 && activeGame) {
+                if (data.attempts < 5 && main.activeGame) {
                     displayGuess(activeRow(data.attempts))
                 }
             } else {   
@@ -334,7 +339,7 @@ const displayController = (() => {
             let letter = gTile.innerHTML.toLowerCase()          
             let wBTile = wordBankTile(letter)
             if (classes.includes('not-in')) {
-                data.notIncluded += letter
+                data.notIncluded = data.createSet(letter, data.notIncluded)
             } else if (classes.includes('misplaced')) {
                 data.misplaced[i] = letter
                 wBTile.classList.add('misplaced')    
