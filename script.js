@@ -1,7 +1,7 @@
 const data = (() => {
     
-    let wordBank = ['abate', 'apple', 'bread', 'depot', 'purge', 'renew', 'reeds'];
-    let possibleWords = [...wordBank];
+    let wordBank;
+    let possibleWords;
     let secretWord;
     let attempts;
     let notIncluded;
@@ -9,45 +9,37 @@ const data = (() => {
     let confirmed;
     
 
-    function setData() {
+    function resetData() {
         // Creates the data structures for a new game.
 
-        this.secretWord = wordBank[Math.floor(Math.random() * wordBank.length)];
         this.attempts = 0;
+        createWordBank();
         this.notIncluded = '';
         this.misplaced = Array(5).fill('');
         this.confirmed = Array(5).fill('');
-        this.possibleWords = [...wordBank]
     }
 
 
-    // function createWordBank () {
+    function createWordBank () {
 
-    //     const testElem = document.createElement('span')
-    //     testElem.setAttribute('id', 'test-elem')
-    //     console.log(testElem)
-    //     document.body.appendChild(testElem)
+        function parseText(text) {
+            text = text.split('\n')
+            data.wordBank = [...text]
+            data.possibleWords = [...text]
+            data.secretWord = data.wordBank[Math.floor(Math.random() * data.wordBank.length)];
+            displayController.modeSelectorLogic()
+        }
 
-    //     function reqListener () {            
-    //         testElem.innerHTML = this.responseText;
-    //         console.log(testElem)
-    //       }
-        
-    //     const oReq = new XMLHttpRequest();
-    //     oReq.onreadystatechange = function() {
-    //         if (oReq.readyState == 4 && oReq.status == 200) {
-    //             document.getElementById('test-elem').innerHTML = oReq.responseText
-    //         }
-    //     }
-    //     oReq.open("GET", "fiveLetterWords.txt");
-    //     oReq.send();
-
-    //     // let wordBank = testElem.innerHTML
-    //     console.log(testElem)
-        
-        
-    
-    // }
+        fetch('fiveLetterWords.txt')
+            .then( response => {
+                if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then( text => parseText(text) )
+            .catch( err => console.error(`Fetch problem: ${err.message}`) );
+    }
 
 
     function createSet(check, addTo) {
@@ -76,12 +68,13 @@ const data = (() => {
 
     function searchWordList() {
         
-        console.log(this.possibleWords)
+        console.log(data.possibleWords)
         const regex = createPattern()
         console.log(regex)
-        this.possibleWords = possibleWords.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLettters(possibleWord))
-        console.log(this.possibleWords)
+        data.possibleWords = data.possibleWords.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLettters(possibleWord))
+        console.log(data.possibleWords)
     }
+
 
     function containsMisplacedLettters(word) {
 
@@ -90,7 +83,7 @@ const data = (() => {
 
     return {
         attempts,
-        // createWordBank,
+        createWordBank,
         secretWord,
         wordBank,
         possibleWords,
@@ -98,7 +91,7 @@ const data = (() => {
         createSet,
         misplaced,
         confirmed,
-        setData,
+        resetData,
         searchWordList
     }
 
@@ -201,18 +194,15 @@ const displayController = (() => {
 
     function backLogic() {
         if (main.isActiveGame()) {
-            for(i=guess.length-1; i >= 0; i--) {
-                if (guess[i] === data.confirmed[i]) {
-                    continue;
-                } else {
-                    guess[i] = ''
-                    if (modeSelector.value === 'solve') {
-                        guessTile(i).className = ''
-                        guessTile(i).classList.add('guess-area-tile')
-                        guessTile(i).classList.add('not-in')
-                    }
-                    break;
-                }                 
+            i=guess.length-1
+            while (!guessTile(i).innerHTML) {
+                i--
+            }
+            guess[i] = ''
+            if (modeSelector.value === 'solve') {
+                guessTile(i).className = ''
+                guessTile(i).classList.add('guess-area-tile')
+                guessTile(i).classList.add('not-in')
             }
             displayGuess()
         }
@@ -227,17 +217,11 @@ const displayController = (() => {
                 solveModeRoundReview()
                 data.searchWordList()
                 wordCount.innerHTML = data.possibleWords.length
-                main.reviewStatus(guess)
-                guess = [...data.confirmed]
-                // prefill confirmed letters in next activeRow
-                if (data.attempts < 5 && main.activeGame) {
-                    displayGuess(activeRow(data.attempts))
-                }
             } else {   
                 playModeRoundReview()   
-                main.reviewStatus(guess)     
-                guess = Array(5).fill('')
             }
+            main.reviewStatus(guess)
+            guess = Array(5).fill('')
         }
     }
 
@@ -374,11 +358,12 @@ const displayController = (() => {
         // Displays the current guess in the appropriate row of the guess area.
         
         let spaces = row.childNodes
+        const previousRow = data.attempts > 0 ? activeRow(data.attempts - 1).childNodes : undefined
         for (i = 0; i < spaces.length; i++) {
-            if (data.confirmed[i]) {
-                spaces[i].classList.add('correct')
-            }
             spaces[i].innerHTML = guess[i] ? guess[i].toUpperCase() : ''
+            if (modeSelector.value === 'solve' && previousRow && spaces[i].innerHTML === previousRow[i].innerHTML) {
+                spaces[i].classList = previousRow[i].classList
+            }
             
         }
     }
@@ -405,7 +390,7 @@ const main = (() => {
         // create page
         displayController.createGuessArea()
         displayController.createLetterBank()
-        data.setData()
+        data.resetData()
         displayController.modeSelectorLogic()
         
         // set gameplay flag
@@ -419,7 +404,7 @@ const main = (() => {
             displayController.showModal('You win!')
             activeGame = false
         } else if (data.attempts > 4) {
-            displayController.showModal('the word was ' + data.secretWord.toUpperCase())
+            displayController.showModal(data.secretWord.toUpperCase())
             activeGame = false  
         } else {
             data.attempts++

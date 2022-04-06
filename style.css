@@ -41,21 +41,13 @@ body {
 .left-column {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    /* border: 1px solid red; */
-
-}
-
-.left-column > * {
-    justify-content: space-evenly;
-    /* border: 1px solid green; */
-}
-
-#words-remaining {
-    /* border: 1px solid BLUE; */
-    gap: 2rem;
     justify-content: space-between;
-    align-items: center;
+    width: 100%;
+    /* border: 1px solid red; */
+}
+
+.left-column:first-child {
+    margin-left: .5rem;
 }
 
 #word-count {
@@ -110,7 +102,6 @@ body {
     gap: 1rem;
     width: 100%;
 }
-
 
 .letter-bank-tile {
     /* border: 1px solid black; */
