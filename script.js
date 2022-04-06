@@ -78,7 +78,26 @@ const data = (() => {
 
     function containsMisplacedLettters(word) {
 
-        return !misplaced || Array.from(misplaced).every(l => word.includes(l))
+        function exists(value) {
+            return Boolean(value) === true
+        }
+        
+        let containsMisplaced = true
+        const misplaced = data.misplaced.filter(exists)
+        
+        if (misplaced) {
+            workingWord = Array(...word)
+            for (x of misplaced) {
+                let i = workingWord.indexOf(x)
+                if (i < 0) {                    
+                    containsMisplaced = false
+                    break;
+                } else {
+                    workingWord.splice(i, 1)
+                }
+            }
+        }
+        return containsMisplaced
     }
 
     return {
@@ -258,16 +277,46 @@ const displayController = (() => {
 
 
     function wordBtnLogic() {
-        showModal(data.possibleWords)
+        
+        let content = [];
+        for (word of data.possibleWords) {
+            wordDiv = document.createElement('div')
+            wordDiv.classList.add('word-div')
+            innerWordDiv = document.createElement('div')
+            innerWordDiv.classList.add('word')
+            innerWordDiv.innerHTML = word.toUpperCase()
+            innerWordDiv.addEventListener('click', selectWord)
+            wordDiv.appendChild(innerWordDiv)
+            content.push(wordDiv)
+            
+        }
+        showModal(content)
+        
+        // showModal(data.possibleWords)
+
+
     }
 
+    function selectWord() {
+        guess = [...this.innerHTML.toLowerCase()]
+        modal.style.display = "none"
+        displayGuess()
+
+    }
 
     function showModal(message) {
         // Accesses the modal.
 
         modal.style.display = "flex"
-        document.getElementById('modal-text').innerHTML = message
-
+        const body = document.getElementById('modal-text')
+        body.innerHTML = ''
+        if (typeof(message) === String) {
+            body.innerHTML = message
+        } else {
+            for (x of message) {
+            body.appendChild(x)
+            }
+        }
     }
 
 
@@ -436,6 +485,6 @@ main.setupGame()
 // idea: solve mode - allow selection of word from word list 
 
 
-// stopped at: ...ready to rework modal for wordList
+// stopped at: ...reworking modal to include a scrollbar in wordList
 
 

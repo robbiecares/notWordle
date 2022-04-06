@@ -133,6 +133,22 @@ a {
     text-align: center;
 }
 
+.word-div {
+    /* border: 1px solid blue; */
+    width: 20%;
+}
+
+.word {
+    /* border: 1px solid red; */
+}
+
+.word:hover,
+.word:focus {
+  background-color: gray;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 /* The Modal (background) */
 #modal {
     display: none; /* Hidden by default */
@@ -152,10 +168,12 @@ a {
 /* Modal Content/Box */
 #modal-content {
     background-color: #fefefe;
-    font-size: 2rem;
+    font-size: 3rem;
      /* x% from the top and centered */
     padding: 2%;
     border: 1px solid #888;
+    max-height: 90%;
+    max-width: 90%;
     display: flex;
     flex-flow: column;
     /* align-items: center; */
@@ -166,10 +184,19 @@ a {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 6rem;
-    /* border: 2px solid red; */
+    font-size: 2rem;
     flex: 1;
 }
+
+#modal-text {
+    /* border: 2px solid red; */
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    overflow-y: scroll;
+
+}
+
 
 /* The Close Button */
 #modal-close {
