@@ -310,7 +310,7 @@ const displayController = (() => {
         modal.style.display = "flex"
         const body = document.getElementById('modal-text')
         body.innerHTML = ''
-        if (typeof(message) === String) {
+        if (typeof(message) === 'string') {
             body.innerHTML = message
         } else {
             for (x of message) {
@@ -452,7 +452,7 @@ const main = (() => {
         if (guess.join('') === data.secretWord) {
             displayController.showModal('You win!')
             activeGame = false
-        } else if (data.attempts > 4) {
+        } else if (data.attempts > 0) {
             displayController.showModal(data.secretWord.toUpperCase())
             activeGame = false  
         } else {
