@@ -140,22 +140,23 @@ a {
 
 .word {
     /* border: 1px solid red; */
+    display: flex;
+    justify-content: center;
 }
 
 .word:hover,
 .word:focus {
-  background-color: gray;
+  background-color: #5cb85c;
   text-decoration: none;
   cursor: pointer;
 }
 
 /* The Modal (background) */
-#modal {
+.modal {
     display: none; /* Hidden by default */
-    justify-content: center;
-    align-items: center;
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
@@ -164,50 +165,65 @@ a {
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
-  
-/* Modal Content/Box */
-#modal-content {
+
+/* Modal Content */
+.modal-content {
+    position: relative;
     background-color: #fefefe;
-    font-size: 3rem;
-     /* x% from the top and centered */
-    padding: 2%;
+    margin: auto;
+    padding: 0;
     border: 1px solid #888;
-    max-height: 90%;
-    max-width: 90%;
-    display: flex;
-    flex-flow: column;
-    /* align-items: center; */
-    justify-content: center;
+    width: 80%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s;
+    font-size: 1.5rem;
 }
 
-#modal-msg {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    flex: 1;
+/* Add Animation */
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0} 
+    to {top:0; opacity:1}
 }
 
-#modal-text {
-    /* border: 2px solid red; */
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
-    overflow-y: scroll;
-
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
 }
-
 
 /* The Close Button */
-#modal-close {
-    /* border: 2px solid red; */
-    color: #aaa;
-    text-align: right;
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
 }
-  
-#modal-close:hover,
-#modal-close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 2px 16px;
+    background-color: #5cb85c;
+    color: white;
+}
+
+.modal-body {
+    padding: 2px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    max-height: 75vh;
+    overflow: auto;
+}
+
+.modal-footer {
+    padding: 2px 16px;
+    background-color: #5cb85c;
+    color: white;
 }

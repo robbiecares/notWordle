@@ -123,19 +123,26 @@ const displayController = (() => {
     const letterBank = document.getElementById('letter-bank')
     
     const resetBtn = document.getElementById('reset')
-    resetBtn.addEventListener('click', resetLogic)
+    resetBtn.addEventListener('click', reset)
 
-    const wordListBtn = document.getElementById('show-words')
-    wordListBtn.addEventListener('click', wordBtnLogic)
-    wordListBtn.style.display = 'none'
+    const showWordsBtn = document.getElementById('show-words')
+    showWordsBtn.addEventListener('click', showWords)
+    showWordsBtn.style.display = 'none'
 
     const modeSelector = document.getElementById('mode-selector')
     modeSelector.addEventListener('change', modeSelectorLogic)
 
     const wordCount = document.getElementById('word-count')
 
-    const modal = document.getElementById('modal')
-    document.getElementById('modal-close').addEventListener('click', () => modal.style.display = "none")
+    const modal = document.getElementById('myModal')
+    document.getElementsByClassName('close')[0].addEventListener('click', () => modal.style.display = "none")
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
 
     let letters;
     let guessTiles;
@@ -213,7 +220,7 @@ const displayController = (() => {
 
     function backLogic() {
         if (main.isActiveGame()) {
-            i=guess.length-1
+            let i = guess.length-1
             while (!guessTile(i).innerHTML) {
                 i--
             }
@@ -245,7 +252,7 @@ const displayController = (() => {
     }
 
 
-    function resetLogic() {
+    function reset() {
         guessArea.innerHTML = ''
         letterBank.innerHTML = ''
         main.setupGame()
@@ -276,7 +283,7 @@ const displayController = (() => {
     }
 
 
-    function wordBtnLogic() {
+    function showWords() {
         
         let content = [];
         for (word of data.possibleWords) {
@@ -291,10 +298,6 @@ const displayController = (() => {
             
         }
         showModal(content)
-        
-        // showModal(data.possibleWords)
-
-
     }
 
     function selectWord() {
@@ -308,13 +311,13 @@ const displayController = (() => {
         // Accesses the modal.
 
         modal.style.display = "flex"
-        const body = document.getElementById('modal-text')
+        const body = document.getElementsByClassName('modal-body')[0]
         body.innerHTML = ''
         if (typeof(message) === 'string') {
             body.innerHTML = message
         } else {
             for (x of message) {
-            body.appendChild(x)
+                body.appendChild(x)
             }
         }
     }
@@ -452,7 +455,7 @@ const main = (() => {
         if (guess.join('') === data.secretWord) {
             displayController.showModal('You win!')
             activeGame = false
-        } else if (data.attempts > 0) {
+        } else if (data.attempts > 4) {
             displayController.showModal(data.secretWord.toUpperCase())
             activeGame = false  
         } else {
@@ -482,8 +485,9 @@ main.setupGame()
 // todo: make show words modal bigger and have it show a list of "most likely words" 
 // at top
 
-// idea: solve mode - allow selection of word from word list 
+// idea: add cursor change to letter click hover
 
+// idea: refactor 'show modal' to work based on the event trigger (i.e. of 'show word btn') rather than message data type
 
 // stopped at: ...reworking modal to include a scrollbar in wordList
 
