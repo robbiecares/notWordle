@@ -4,7 +4,7 @@ const data = (() => {
     let possibleWords;
     let secretWord;
     let attempts;
-    let notIncluded;
+    let notInWord;
     let misplaced;
     let confirmed;
     
@@ -14,7 +14,7 @@ const data = (() => {
 
         this.attempts = 0;
         createWordBank();
-        this.notIncluded = '';
+        this.notInWord = '';
         this.misplaced = Array(5).fill('');
         this.confirmed = Array(5).fill('');
     }
@@ -42,25 +42,25 @@ const data = (() => {
     }
 
 
-    function createSet(check, addTo) {
-        // Adds a each element of 'check' to string 'addTo' if the element is not already included.      
-        
-        for (let l of check) {
-            if (!addTo.includes(l)) {
-                addTo += l
-            }
-        }
-        return addTo
-    } 
-      
-
     function createPattern() {
         // Create a regex based on the known details of an unknown word.
         
         let pattern = ''
         for (i=0; i < 5; i++) {
-            let set = createSet(data.misplaced[i], data.notIncluded)
-            pattern += data.confirmed[i] ? data.confirmed[i] : '[' + '^' + set + ']'
+            space = ''
+            if (data.confirmed[i]) {
+                space += data.confirmed[i]
+            } else {
+                if (data.misplaced[i]) {
+                    space += data.misplaced[i]
+                }
+                if (data.notInWord) {
+                    space += data.notInWord
+                }
+                space = space ? '[^' + space + ']' : '.'
+            }    
+            pattern += space
+
         }
         return new RegExp(pattern)
     }
@@ -71,7 +71,7 @@ const data = (() => {
         console.log(data.possibleWords)
         const regex = createPattern()
         console.log(regex)
-        data.possibleWords = data.possibleWords.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLettters(possibleWord))
+        data.possibleWords = data.wordBank.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLettters(possibleWord))
         console.log(data.possibleWords)
     }
 
@@ -97,8 +97,37 @@ const data = (() => {
                 }
             }
         }
-        return containsMisplaced
+         return containsMisplaced
     }
+     
+    
+
+
+    function containsMisplacedLettters222() {
+
+    // word must contain all misplaced letters
+    // word cannot contain the misplaced letter at the index of a confirmed letter
+
+    
+    //  remove the already confirmed letters from the working word
+    const workingWord = Array(...word)
+    for (i=0; i > workingWord.length; i++) {
+        if (workingWord[i] === data.confirmed[i]) {
+            workingWord[i] = ''
+        }
+    }
+
+    //  remove every misplaced letter
+    for (letter of misplaced) {
+        let i = workingWord.indexOf(letter)
+        if (i > 0) {
+            workingWord[i] = ''
+        } else {
+            containsMisplaced = false
+        }
+    }
+    return containsMisplaced
+ }
 
     return {
         attempts,
@@ -106,8 +135,7 @@ const data = (() => {
         secretWord,
         wordBank,
         possibleWords,
-        notIncluded,
-        createSet,
+        notInWord,
         misplaced,
         confirmed,
         resetData,
@@ -149,7 +177,7 @@ const displayController = (() => {
     let guess;
     const activeRow = (i=data.attempts) => {return guessArea.childNodes[i]}
     const guessTile = (i) => {return activeRow().childNodes[i]}
-    const wordBankTile = (l) => {return document.getElementById(l.toUpperCase())}
+    const lettterBankBtn = (l) => {return document.getElementById(l.toUpperCase())}
     
     
     function createGuessArea() {
@@ -203,7 +231,7 @@ const displayController = (() => {
         enterBtn.innerHTML = 'Enter'
         lastRow.prepend(enterBtn)
         enterBtn.classList.add('letter-bank-tile')
-        enterBtn.addEventListener('click', enterLogic)
+        enterBtn.addEventListener('click', enter)
     }
  
 
@@ -235,24 +263,32 @@ const displayController = (() => {
     }
 
 
-    function enterLogic() {
-        modeSelector.disabled = true
-        // if (guess.length === 5 && data.wordBank.includes(guess)) {
+    function enter() {
+        // Validates the word input by the user calls other functions based on the input.
+
         if (!guess.includes('')) {
-            if (modeSelector.value === 'solve') {
-                solveModeRoundReview()
-                data.searchWordList()
-                wordCount.innerHTML = data.possibleWords.length
-            } else {   
-                playModeRoundReview()   
+            if (data.wordBank.includes(guess.join(''))) {
+            // if (data.wordBank.includes('apple')) {
+                modeSelector.disabled = true
+                if (modeSelector.value === 'solve') {
+                    solveModeRoundReview()
+                    data.searchWordList()
+                    wordCount.innerHTML = data.possibleWords.length
+                } else {   
+                    playModeRoundReview()   
+                }
+                main.reviewStatus(guess)
+                guess = Array(5).fill('')
+            } else {
+                showModal('Invalid word')
             }
-            main.reviewStatus(guess)
-            guess = Array(5).fill('')
         }
     }
 
 
     function reset() {
+        // Resets the user input areas and saved data of the game.
+
         guessArea.innerHTML = ''
         letterBank.innerHTML = ''
         main.setupGame()
@@ -284,6 +320,7 @@ const displayController = (() => {
 
 
     function showWords() {
+        // Formats a list of words for display in the modal.
         
         let content = [];
         for (word of data.possibleWords) {
@@ -301,6 +338,8 @@ const displayController = (() => {
     }
 
     function selectWord() {
+        // Allows the user to select a word from the list of possible words.
+
         guess = [...this.innerHTML.toLowerCase()]
         modal.style.display = "none"
         displayGuess()
@@ -344,7 +383,7 @@ const displayController = (() => {
         for (i = 0; i < roundGuess.length; i++) {
             if (roundGuess[i] === secretWord[i]) {
                 guessTile(i).classList.add('correct')
-                wordBankTile(roundGuess[i]).classList.add('correct')
+                lettterBankBtn(roundGuess[i]).classList.add('correct')
                 roundGuess[i] = ''
                 secretWord[i] = ''
             }
@@ -355,10 +394,10 @@ const displayController = (() => {
             if (roundGuess[i]) {
                 if (index === false) {
                     guessTile(i).classList.add('not-in')
-                    wordBankTile(roundGuess[i]).classList.add('not-in')
+                    lettterBankBtn(roundGuess[i]).classList.add('not-in')
                 } else {    
                     guessTile(i).classList.add('misplaced')
-                    wordBankTile(roundGuess[i]).classList.add('misplaced')
+                    lettterBankBtn(roundGuess[i]).classList.add('misplaced')
                     roundGuess[i] = ''
                     secretWord[index] = ''
                 }
@@ -368,20 +407,26 @@ const displayController = (() => {
 
 
     function solveModeRoundReview() {
+        // Updates the data 
 
         for (i = 0; i < activeRow().children.length; i++) {
             let gTile = guessTile(i)
             let classes = Array.from(gTile.classList)
             let letter = gTile.innerHTML.toLowerCase()          
-            let wBTile = wordBankTile(letter)
+            let letterBankBtn = lettterBankBtn(letter)
+            
+            // add the letter to the appropriate variable for pattern building
             if (classes.includes('not-in')) {
-                data.notIncluded = data.createSet(letter, data.notIncluded)
+                // data.notIncluded = data.createSet(letter, data.notIncluded)
+                if (!data.notInWord.includes(letter))
+                    data.notInWord += letter 
             } else if (classes.includes('misplaced')) {
-                data.misplaced[i] = letter
-                wBTile.classList.add('misplaced')    
+                if (!data.misplaced[i].includes(letter))
+                    data.misplaced[i] += letter 
+                letterBankBtn.classList.add('misplaced')    
             } else if (classes.includes('correct')) {
                 data.confirmed[i] = letter
-                wBTile.classList.add('correct')
+                letterBankBtn.classList.add('correct')
             }
             gTile.removeEventListener('click', toggleLetterStatus)
         }
@@ -479,16 +524,16 @@ const main = (() => {
 main.setupGame()
 
 
-// idea: solve mode - make wordbank tiles for any 'not-in' letters unclickable or 
-// not respond to click
-
-// todo: make show words modal bigger and have it show a list of "most likely words" 
-// at top
+// todo: show list of "most likely words" in modal
 
 // idea: add cursor change to letter click hover
 
 // idea: refactor 'show modal' to work based on the event trigger (i.e. of 'show word btn') rather than message data type
 
-// stopped at: ...reworking modal to include a scrollbar in wordList
+// idea: solve mode - color 'not in' letters of wordbank
+
+// todo: factor 'update word bank btns' out of 'solve mode round review'
+
+// stopped at: 
 
 
