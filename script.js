@@ -76,39 +76,41 @@ const data = (() => {
     }
 
 
-    function containsMisplacedLettters(word) {
+    // function containsMisplacedLetttersXXX(word) {
 
-        function exists(value) {
-            return Boolean(value) === true
-        }
+    //     function exists(value) {
+    //         return Boolean(value) === true
+    //     }
         
-        let containsMisplaced = true
-        const misplaced = data.misplaced.filter(exists)
+    //     let containsMisplaced = true
+    //     const misplaced = data.misplaced.filter(exists)
         
-        if (misplaced) {
-            workingWord = Array(...word)
-            for (x of misplaced) {
-                let i = workingWord.indexOf(x)
-                if (i < 0) {                    
-                    containsMisplaced = false
-                    break;
-                } else {
-                    workingWord.splice(i, 1)
-                }
-            }
-        }
-         return containsMisplaced
-    }
+    //     if (misplaced) {
+    //         workingWord = Array(...word)
+    //         for (x of misplaced) {
+    //             let i = workingWord.indexOf(x)
+    //             if (i < 0) {                    
+    //                 containsMisplaced = false
+    //                 break;
+    //             } else {
+    //                 workingWord.splice(i, 1)
+    //             }
+    //         }
+    //     }
+    //      return containsMisplaced
+    // }
      
     
 
 
-    function containsMisplacedLettters222() {
+    function containsMisplacedLettters(word) {
 
     // word must contain all misplaced letters
     // word cannot contain the misplaced letter at the index of a confirmed letter
 
     
+    containsMisplaced = true
+
     //  remove the already confirmed letters from the working word
     const workingWord = Array(...word)
     for (i=0; i > workingWord.length; i++) {
@@ -118,12 +120,13 @@ const data = (() => {
     }
 
     //  remove every misplaced letter
-    for (letter of misplaced) {
+    for (letter of data.misplaced.join('')) {
         let i = workingWord.indexOf(letter)
         if (i > 0) {
             workingWord[i] = ''
         } else {
             containsMisplaced = false
+            break;
         }
     }
     return containsMisplaced
@@ -152,6 +155,10 @@ const displayController = (() => {
     
     const resetBtn = document.getElementById('reset')
     resetBtn.addEventListener('click', reset)
+
+    const settingsBtn = document.getElementById('settings')
+    settingsBtn.addEventListener('click', showSettings)
+
 
     const showWordsBtn = document.getElementById('show-words')
     showWordsBtn.addEventListener('click', showWords)
@@ -248,7 +255,7 @@ const displayController = (() => {
 
     function backLogic() {
         if (main.isActiveGame()) {
-            let i = guess.length-1
+            let i = guess.length - 1
             while (!guessTile(i).innerHTML) {
                 i--
             }
@@ -267,8 +274,8 @@ const displayController = (() => {
         // Validates the word input by the user calls other functions based on the input.
 
         if (!guess.includes('')) {
-            if (data.wordBank.includes(guess.join(''))) {
-            // if (data.wordBank.includes('apple')) {
+            // if (data.wordBank.includes(guess.join(''))) {
+            if (data.wordBank.includes('apple')) {
                 modeSelector.disabled = true
                 if (modeSelector.value === 'solve') {
                     solveModeRoundReview()
@@ -279,6 +286,7 @@ const displayController = (() => {
                 }
                 main.reviewStatus(guess)
                 guess = Array(5).fill('')
+                data.misplaced = Array(5).fill('')
             } else {
                 showModal('Invalid word')
             }
@@ -293,6 +301,15 @@ const displayController = (() => {
         letterBank.innerHTML = ''
         main.setupGame()
         modeSelector.disabled = false
+    }
+
+
+    function showSettings() {
+        
+        // playmode
+        
+        
+        showModal('text')
     }
 
 
@@ -337,6 +354,7 @@ const displayController = (() => {
         showModal(content)
     }
 
+
     function selectWord() {
         // Allows the user to select a word from the list of possible words.
 
@@ -346,12 +364,12 @@ const displayController = (() => {
 
     }
 
-    function showModal(message) {
-        // Accesses the modal.
+    function showModal(message='', header='&nbsp') {
+        // Displays the modal.
 
+        modal.getElementsByClassName('header-text').item([0]).innerHTML = header
         modal.style.display = "flex"
-        const body = document.getElementsByClassName('modal-body')[0]
-        body.innerHTML = ''
+        const body = document.getElementsByClassName('modal-body').item(0)
         if (typeof(message) === 'string') {
             body.innerHTML = message
         } else {
@@ -532,7 +550,17 @@ main.setupGame()
 
 // idea: solve mode - color 'not in' letters of wordbank
 
+// idea: solve mode - allow back button to return to previous row
+
 // todo: factor 'update word bank btns' out of 'solve mode round review'
+
+// credit icon provider (see link at bottom of index)
+
+
+
+// could misplaced be an string rather than an array?
+
+
 
 // stopped at: 
 
