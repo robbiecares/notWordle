@@ -30,7 +30,7 @@ const data = (() => {
             displayController.modeSelectorLogic()
         }
 
-        fetch('fiveLetterWords.txt')
+        fetch('https://gist.githubusercontent.com/cfreshman/a7b776506c73284511034e63af1017ee/raw/845966807347a7b857d53294525263408be967ce/wordle-nyt-answers-alphabetical.txt')
             .then( response => {
                 if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
@@ -274,8 +274,8 @@ const displayController = (() => {
         // Validates the word input by the user calls other functions based on the input.
 
         if (!guess.includes('')) {
-            // if (data.wordBank.includes(guess.join(''))) {
-            if (data.wordBank.includes('apple')) {
+            if (data.wordBank.includes(guess.join(''))) {
+            // if (data.wordBank.includes('apple')) {
                 modeSelector.disabled = true
                 if (modeSelector.value === 'solve') {
                     solveModeRoundReview()
@@ -554,11 +554,15 @@ main.setupGame()
 
 // todo: factor 'update word bank btns' out of 'solve mode round review'
 
-// credit icon provider (see link at bottom of index)
 
+// todo: credit icon providers (see link at bottom of index)
 
+// todo: credit wordlist provider
 
-// could misplaced be an string rather than an array?
+// thought: could misplaced be an string rather than an array?
+
+// feature: treat win condition and word validation as fading notication
+
 
 
 
