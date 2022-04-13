@@ -309,7 +309,7 @@ const displayController = (() => {
         // playmode
         
         
-        showModal('text')
+        showModal('coming soon')
     }
 
 
