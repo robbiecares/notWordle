@@ -262,10 +262,12 @@ const displayController = (() => {
  
 
     function clickLetterBankLetter(e) {
-        for (i=0; i < guess.length; i++) {
-            if (!guessTile(i).innerHTML) {
-                guess[i] = (e.target.innerHTML.toLowerCase())
-                break;   
+        if (main.isActiveGame()) {
+            for (i=0; i < guess.length; i++) {
+                if (!guessTile(i).innerHTML) {
+                    guess[i] = (e.target.innerHTML.toLowerCase())
+                    break;   
+                    }
             }
         }
         displayGuess()
@@ -320,6 +322,12 @@ const displayController = (() => {
         letterBank.innerHTML = ''
         main.setupGame()
         modeSelector.disabled = false
+    }
+
+    
+    function showMessage(text) {
+        document.getElementById('message').style.display = 'flex'
+        document.getElementById('message-text').innerHTML = text
     }
 
 
@@ -507,7 +515,8 @@ const displayController = (() => {
         createLetterBank,
         guessArea,
         showModal,
-        modeSelectorLogic
+        modeSelectorLogic,
+        showMessage
     }
 })();
 
@@ -535,10 +544,10 @@ const main = (() => {
     function reviewStatus(guess) {
         // Checks the game for win coniditions. if present 
         if (guess.join('') === data.secretWord) {
-            displayController.showModal('You win!')
+            displayController.showMessage('YOU WIN!')
             activeGame = false
         } else if (data.attempts > 4) {
-            displayController.showModal(data.secretWord.toUpperCase())
+            displayController.showMessage(data.secretWord.toUpperCase())
             activeGame = false  
         } else {
             data.attempts++

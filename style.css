@@ -54,7 +54,7 @@ img {
 
 .guess-area-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     gap: .5rem;
 }
 
@@ -81,7 +81,8 @@ img {
 }
 
 .letter-bank-tile {
-    padding: 1rem .5rem;
+    padding: 1.25rem .5rem;
+    /* flex: 1 */
 }
 
 .not-in {
@@ -123,6 +124,19 @@ a {
   background-color: #5cb85c;
   text-decoration: none;
   cursor: pointer;
+}
+
+#message {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 3.5rem;
+    align-self: center;
+    align-items: baseline;
+    z-index: 1;
+    padding: .25rem;
+    font-size: 1.5rem;
+    /* color: white; */
+    background-color: rgba(0,0,0,0.2);
 }
 
 /* The Modal (background) */
