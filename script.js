@@ -159,6 +159,9 @@ const displayController = (() => {
     const settingsBtn = document.getElementById('settings')
     settingsBtn.addEventListener('click', showSettings)
 
+    const message = document.getElementById('message')
+    document.getElementById('message-close').addEventListener('click', () => message.style.display = "none")
+
     const showWordsBtn = document.getElementById('show-words')
     showWordsBtn.addEventListener('click', showWords)
     showWordsBtn.style.display = 'none'
@@ -169,7 +172,7 @@ const displayController = (() => {
     const wordCount = document.getElementById('word-count')
 
     const modal = document.getElementById('myModal')
-    document.getElementsByClassName('close')[0].addEventListener('click', () => modal.style.display = "none")
+    document.getElementById('modal-close').addEventListener('click', () => modal.style.display = "none")
 
     // When the user clicks anywhere outside of the modal, close it
     window.onclick = function(event) {
@@ -269,8 +272,8 @@ const displayController = (() => {
                     break;   
                     }
             }
+            displayGuess()
         }
-        displayGuess()
     }
     
 
@@ -309,7 +312,7 @@ const displayController = (() => {
                 guess = Array(5).fill('')
                 data.misplaced = Array(5).fill('')
             } else {
-                showModal('Invalid word')
+                showMessage('Invalid word')
             }
         }
     }
@@ -320,16 +323,22 @@ const displayController = (() => {
 
         guessArea.innerHTML = ''
         letterBank.innerHTML = ''
+        message.style.display = 'none'
         main.setupGame()
         modeSelector.disabled = false
+        
     }
 
     
-    function showMessage(text) {
-        document.getElementById('message').style.display = 'flex'
+    function showMessage(text, temp=true) {
+        message.style.display = 'flex'
         document.getElementById('message-text').innerHTML = text
+        if (temp) {
+            setTimeout(() => {message.style.display = 'none'}, 3000)
+        } else {
+            message.children.namedItem('message-close').style.display = 'none'
+        }
     }
-
 
     function showSettings() {
         
@@ -536,18 +545,18 @@ const main = (() => {
         data.resetData()
         displayController.modeSelectorLogic()
         
-        // set gameplay flag
+        // set game play flag
         activeGame = true
     }
     
 
     function reviewStatus(guess) {
-        // Checks the game for win coniditions. if present 
+        // Checks the game for win conditions. if present 
         if (guess.join('') === data.secretWord) {
             displayController.showMessage('YOU WIN!')
             activeGame = false
         } else if (data.attempts > 4) {
-            displayController.showMessage(data.secretWord.toUpperCase())
+            displayController.showMessage(data.secretWord.toUpperCase(), false)
             activeGame = false  
         } else {
             data.attempts++
@@ -572,8 +581,6 @@ main.setupGame()
 
 // todo: show list of "most likely words" in modal
 
-// idea: add cursor change to letter click hover
-
 // idea: refactor 'show modal' to work based on the event trigger (i.e. of 'show word btn') rather than message data type
 
 // idea: solve mode - color 'not in' letters of wordbank
@@ -582,18 +589,16 @@ main.setupGame()
 
 // todo: factor 'update word bank btns' out of 'solve mode round review'
 
-
 // todo: credit icon providers (see link at bottom of index)
 
 // todo: credit wordlist provider
 
 // thought: could misplaced be an string rather than an array?
 
-// feature: treat win condition and word validation as fading notication
-
-
+// idea: give messages a fade effect
 
 
 // stopped at: 
+    
 
 
