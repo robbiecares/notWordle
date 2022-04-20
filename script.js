@@ -27,7 +27,6 @@ const data = (() => {
             data.wordBank = [...text]
             data.possibleWords = [...text]
             data.secretWord = data.wordBank[Math.floor(Math.random() * data.wordBank.length)];
-            displayController.modeSelectorLogic()
         }
 
         fetch('https://gist.githubusercontent.com/cfreshman/a7b776506c73284511034e63af1017ee/raw/845966807347a7b857d53294525263408be967ce/wordle-nyt-answers-alphabetical.txt')
@@ -162,12 +161,12 @@ const displayController = (() => {
     const message = document.getElementById('message')
     document.getElementById('message-close').addEventListener('click', () => message.style.display = "none")
 
-    const showWordsBtn = document.getElementById('show-words')
-    showWordsBtn.addEventListener('click', showWords)
-    showWordsBtn.style.display = 'none'
+    const showWordsSwitch = document.querySelector("input[name='show-word-list']")
+    showWordsSwitch.addEventListener('click', toggleWordListSetting)
 
-    const modeSelector = document.getElementById('mode-selector')
-    modeSelector.addEventListener('change', modeSelectorLogic)
+    const showWordsBtn = document.getElementById('show-words')
+    showWordsBtn.addEventListener('click', showWordList)
+    showWordsBtn.style.display = 'none'
 
     const wordCount = document.getElementById('word-count')
 
@@ -206,7 +205,7 @@ const displayController = (() => {
     let guess;
     const activeRow = (i=data.attempts) => {return guessArea.childNodes[i]}
     const guessTile = (i) => {return activeRow().childNodes[i]}
-    const lettterBankBtn = (l) => {return document.getElementById(l.toUpperCase())}
+    const letterBankBtn = (l) => {return document.getElementById(l.toUpperCase())}
     
     
     function createGuessArea() {
@@ -237,7 +236,7 @@ const displayController = (() => {
             rowDiv.classList.add('letter-bank-row')
             letterBank.append(rowDiv)
             for (i = 0; i < rowLetters.length; i++) {
-                let tile = document.createElement('button')
+                let tile = document.createElement('div')
                 tile.innerHTML = rowLetters[i]
                 tile.classList.add('letter-bank-tile')
                 tile.id = rowLetters[i]
@@ -254,7 +253,7 @@ const displayController = (() => {
         backBtn.innerHTML = 'Back'
         backBtn.classList.add('letter-bank-tile')
         lastRow.append(backBtn)
-        backBtn.addEventListener('click', backLogic)
+        backBtn.addEventListener('click', back)
 
         const enterBtn = document.createElement('button')
         enterBtn.innerHTML = 'Enter'
@@ -277,18 +276,13 @@ const displayController = (() => {
     }
     
 
-    function backLogic() {
+    function back() {
         if (main.isActiveGame()) {
             let i = guess.length - 1
             while (!guessTile(i).innerHTML) {
                 i--
             }
             guess[i] = ''
-            if (modeSelector.value === 'solve') {
-                guessTile(i).className = ''
-                guessTile(i).classList.add('guess-area-tile')
-                guessTile(i).classList.add('not-in')
-            }
             displayGuess()
         }
     }
@@ -300,15 +294,11 @@ const displayController = (() => {
         if (!guess.includes('')) {
             if (data.wordBank.includes(guess.join(''))) {
             // if (data.wordBank.includes('apple')) {
-                modeSelector.disabled = true
-                if (modeSelector.value === 'solve') {
-                    solveModeRoundReview()
-                    data.searchWordList()
-                    wordCount.innerHTML = data.possibleWords.length
-                } else {   
-                    playModeRoundReview()   
-                }
+                playModeRoundReview()
+
                 main.reviewStatus(guess)
+                
+                data.searchWordList()
                 guess = Array(5).fill('')
                 data.misplaced = Array(5).fill('')
             } else {
@@ -324,9 +314,7 @@ const displayController = (() => {
         guessArea.innerHTML = ''
         letterBank.innerHTML = ''
         message.style.display = 'none'
-        main.setupGame()
-        modeSelector.disabled = false
-        
+        main.setupGame()        
     }
 
     
@@ -340,54 +328,34 @@ const displayController = (() => {
         }
     }
 
+
     function showSettings() {
+
+        const settings = document.getElementById('settings-div')
+        settings.style.display = 'flex'
         
-        // playmode
-        
-        
-        showModal('coming soon')
+        showModal([settings], 'Settings')
     }
 
 
-    function modeSelectorLogic() {
-        
-        let visibility;
-
-        if (modeSelector.value === 'solve') {
-            visibility = 'flex';
-            guessTiles.forEach(tile => {
-                tile.addEventListener('click', toggleLetterStatus);
-                tile.classList.add('not-in')
-            })
-            wordCount.innerHTML = data.possibleWords.length
-        } else {
-            visibility = 'none';
-            guessTiles.forEach(tile => {
-                tile.removeEventListener('click', toggleLetterStatus);
-                tile.className = '';
-                tile.classList.add('guess-area-tile')
-            })            
-        }
-        document.querySelectorAll('.solve-mode').forEach(elem => elem.style.display = visibility)
+    function toggleWordListSetting() {
+        showWordsSwitch.checked ? showWordsBtn.style.display = 'block' : showWordsBtn.style.display = 'none'
     }
 
 
-    function showWords() {
+    function showWordList() {
         // Formats a list of words for display in the modal.
         
         let content = [];
         for (word of data.possibleWords) {
             wordDiv = document.createElement('div')
-            wordDiv.classList.add('word-div')
-            innerWordDiv = document.createElement('div')
-            innerWordDiv.classList.add('word')
-            innerWordDiv.innerHTML = word.toUpperCase()
-            innerWordDiv.addEventListener('click', selectWord)
-            wordDiv.appendChild(innerWordDiv)
-            content.push(wordDiv)
-            
+            wordDiv.classList.add('word')
+            wordDiv.innerHTML = word.toUpperCase()
+            wordDiv.addEventListener('click', selectWord)
+            content.push(wordDiv)            
         }
-        showModal(content)
+        const header = 'Wordlist (' + data.possibleWords.length + ')'
+        showModal(content, header)
     }
 
 
@@ -400,24 +368,22 @@ const displayController = (() => {
 
     }
 
+
     function showModal(message='', header='&nbsp') {
         // Displays the modal.
 
         modal.getElementsByClassName('header-text').item([0]).innerHTML = header
         modal.style.display = "flex"
         const body = document.getElementsByClassName('modal-body').item(0)
-        if (typeof(message) === 'string') {
-            body.innerHTML = message
-        } else {
-            for (x of message) {
-                body.appendChild(x)
-            }
+        body.innerHTML = ''
+        for (x of message) {
+            body.appendChild(x)
         }
     }
-
+    
 
     function _letterInSecretWord(array, letter) {
-        // Returns the indx of the letter in the array or false is not present.
+        // Returns the index of the letter in the array or false if not present.
         for (j = 0; j < array.length; j++) {
             if (array[j] === letter) {
                 return j;
@@ -437,7 +403,8 @@ const displayController = (() => {
         for (i = 0; i < roundGuess.length; i++) {
             if (roundGuess[i] === secretWord[i]) {
                 guessTile(i).classList.add('correct')
-                lettterBankBtn(roundGuess[i]).classList.add('correct')
+                letterBankBtn(roundGuess[i]).classList.add('correct')
+                data.confirmed[i] = roundGuess[i]
                 roundGuess[i] = ''
                 secretWord[i] = ''
             }
@@ -448,60 +415,22 @@ const displayController = (() => {
             if (roundGuess[i]) {
                 if (index === false) {
                     guessTile(i).classList.add('not-in')
-                    lettterBankBtn(roundGuess[i]).classList.add('not-in')
+                    letterBankBtn(roundGuess[i]).classList.add('not-in')
+                    if (!data.notInWord.includes(roundGuess[i])) {
+                        data.notInWord += roundGuess[i]
+                    }
                 } else {    
                     guessTile(i).classList.add('misplaced')
-                    lettterBankBtn(roundGuess[i]).classList.add('misplaced')
+                    letterBankBtn(roundGuess[i]).classList.add('misplaced')
+                    if (!data.misplaced[i].includes(roundGuess[i])) {
+                        data.misplaced[i] += roundGuess[i] 
+                    }
                     roundGuess[i] = ''
-                    secretWord[index] = ''
+                    secretWord[index] = ''   
                 }
             }   
         }
-    }
-
-
-    function solveModeRoundReview() {
-        // Updates the data 
-
-        for (i = 0; i < activeRow().children.length; i++) {
-            let gTile = guessTile(i)
-            let classes = Array.from(gTile.classList)
-            let letter = gTile.innerHTML.toLowerCase()          
-            let letterBankBtn = lettterBankBtn(letter)
-            
-            // add the letter to the appropriate variable for pattern building
-            if (classes.includes('not-in')) {
-                // data.notIncluded = data.createSet(letter, data.notIncluded)
-                if (!data.notInWord.includes(letter))
-                    data.notInWord += letter 
-            } else if (classes.includes('misplaced')) {
-                if (!data.misplaced[i].includes(letter))
-                    data.misplaced[i] += letter 
-                letterBankBtn.classList.add('misplaced')    
-            } else if (classes.includes('correct')) {
-                data.confirmed[i] = letter
-                letterBankBtn.classList.add('correct')
-            }
-            gTile.removeEventListener('click', toggleLetterStatus)
-        }
-    }
-
-
-    function toggleLetterStatus() {
         
-        if (this.innerHTML) {
-            classes = ['not-in', 'misplaced', 'correct'];
-            let current = this.classList;
-            current.forEach(c => {
-                if (classes.includes(c)) {
-                    let i = classes.indexOf(c)
-                    this.classList.remove(c)
-                    i = (i === 2) ? 0 : i + 1
-                    this.classList.add(classes[i])            
-                };
-            });
-        }
-
     }
 
 
@@ -511,11 +440,7 @@ const displayController = (() => {
         let spaces = row.childNodes
         const previousRow = data.attempts > 0 ? activeRow(data.attempts - 1).childNodes : undefined
         for (i = 0; i < spaces.length; i++) {
-            spaces[i].innerHTML = guess[i] ? guess[i].toUpperCase() : ''
-            if (modeSelector.value === 'solve' && previousRow && spaces[i].innerHTML === previousRow[i].innerHTML) {
-                spaces[i].classList = previousRow[i].classList
-            }
-            
+            spaces[i].innerHTML = guess[i] ? guess[i].toUpperCase() : ''        
         }
     }
 
@@ -524,8 +449,8 @@ const displayController = (() => {
         createLetterBank,
         guessArea,
         showModal,
-        modeSelectorLogic,
-        showMessage
+        showMessage,
+        toggleWordListSetting
     }
 })();
 
@@ -542,10 +467,11 @@ const main = (() => {
         // create page
         displayController.createGuessArea()
         displayController.createLetterBank()
+        displayController.toggleWordListSetting()
         data.resetData()
-        displayController.modeSelectorLogic()
         
         // set game play flag
+
         activeGame = true
     }
     
