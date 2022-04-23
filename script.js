@@ -67,52 +67,23 @@ const data = (() => {
 
     function searchWordList() {
         
-        console.log(data.possibleWords)
         const regex = createPattern()
         console.log(regex)
-        data.possibleWords = data.wordBank.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLettters(possibleWord))
-        console.log(data.possibleWords)
-    }
+        possibleWords = data.wordBank.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLetters(possibleWord))
+        console.log(possibleWords)
+    }  
 
 
-    // function containsMisplacedLetttersXXX(word) {
-
-    //     function exists(value) {
-    //         return Boolean(value) === true
-    //     }
-        
-    //     let containsMisplaced = true
-    //     const misplaced = data.misplaced.filter(exists)
-        
-    //     if (misplaced) {
-    //         workingWord = Array(...word)
-    //         for (x of misplaced) {
-    //             let i = workingWord.indexOf(x)
-    //             if (i < 0) {                    
-    //                 containsMisplaced = false
-    //                 break;
-    //             } else {
-    //                 workingWord.splice(i, 1)
-    //             }
-    //         }
-    //     }
-    //      return containsMisplaced
-    // }
-     
-    
-
-
-    function containsMisplacedLettters(word) {
+    function containsMisplacedLetters(word) {
 
     // word must contain all misplaced letters
     // word cannot contain the misplaced letter at the index of a confirmed letter
 
-    
     containsMisplaced = true
 
     //  remove the already confirmed letters from the working word
     const workingWord = Array(...word)
-    for (i=0; i > workingWord.length; i++) {
+    for (i=0; i < workingWord.length; i++) {
         if (workingWord[i] === data.confirmed[i]) {
             workingWord[i] = ''
         }
@@ -121,7 +92,7 @@ const data = (() => {
     //  remove every misplaced letter
     for (letter of data.misplaced.join('')) {
         let i = workingWord.indexOf(letter)
-        if (i > 0) {
+        if (i > -1) {
             workingWord[i] = ''
         } else {
             containsMisplaced = false
@@ -294,13 +265,13 @@ const displayController = (() => {
         if (!guess.includes('')) {
             if (data.wordBank.includes(guess.join(''))) {
             // if (data.wordBank.includes('apple')) {
-                playModeRoundReview()
+                roundReview()
 
                 main.reviewStatus(guess)
                 
                 data.searchWordList()
                 guess = Array(5).fill('')
-                data.misplaced = Array(5).fill('')
+                // data.misplaced = Array(5).fill('')
             } else {
                 showMessage('Invalid word')
             }
@@ -380,53 +351,40 @@ const displayController = (() => {
             body.appendChild(x)
         }
     }
-    
-
-    function _letterInSecretWord(array, letter) {
-        // Returns the index of the letter in the array or false if not present.
-        for (j = 0; j < array.length; j++) {
-            if (array[j] === letter) {
-                return j;
-            }
-        }
-        return false;
-    }
 
 
-    function playModeRoundReview() {
+    function roundReview() {
 
         let roundGuess = [...guess]
         let secretWord = data.secretWord.split('');
-        let i = 0;
-        // const guessedLetter = (i) => {return guess[i]};
+        // let i = 0;
         // pass for correct letters in the correct location
         for (i = 0; i < roundGuess.length; i++) {
             if (roundGuess[i] === secretWord[i]) {
                 guessTile(i).classList.add('correct')
                 letterBankBtn(roundGuess[i]).classList.add('correct')
                 data.confirmed[i] = roundGuess[i]
-                roundGuess[i] = ''
+                // roundGuess[i] = ''
                 secretWord[i] = ''
             }
         }   
-        // pass for correct letters in wrong location and incorrect letters
+        // pass for correct letters in wrong location and letters not in word
         for (i = 0; i < roundGuess.length; i++) {
-            let index = _letterInSecretWord(secretWord, roundGuess[i])
             if (roundGuess[i]) {
-                if (index === false) {
-                    guessTile(i).classList.add('not-in')
-                    letterBankBtn(roundGuess[i]).classList.add('not-in')
-                    if (!data.notInWord.includes(roundGuess[i])) {
-                        data.notInWord += roundGuess[i]
-                    }
-                } else {    
+                let index = secretWord.indexOf(roundGuess[i])
+                if (index > -1) {
                     guessTile(i).classList.add('misplaced')
                     letterBankBtn(roundGuess[i]).classList.add('misplaced')
                     if (!data.misplaced[i].includes(roundGuess[i])) {
                         data.misplaced[i] += roundGuess[i] 
                     }
-                    roundGuess[i] = ''
-                    secretWord[index] = ''   
+                    secretWord[index] = ''
+                } else {    
+                    guessTile(i).classList.add('not-in')
+                    letterBankBtn(roundGuess[i]).classList.add('not-in')
+                    if (!data.notInWord.includes(roundGuess[i]) && !data.secretWord.includes(roundGuess[i])) {
+                        data.notInWord += roundGuess[i]
+                    }
                 }
             }   
         }
@@ -509,12 +467,6 @@ main.setupGame()
 
 // idea: refactor 'show modal' to work based on the event trigger (i.e. of 'show word btn') rather than message data type
 
-// idea: solve mode - color 'not in' letters of wordbank
-
-// idea: solve mode - allow back button to return to previous row
-
-// todo: factor 'update word bank btns' out of 'solve mode round review'
-
 // todo: credit icon providers (see link at bottom of index)
 
 // todo: credit wordlist provider
@@ -523,8 +475,7 @@ main.setupGame()
 
 // idea: give messages a fade effect
 
-
-// stopped at: 
+// stopped at: // bugs in logic of wordlist and data structures for letters
     
 
 
