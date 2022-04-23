@@ -69,7 +69,7 @@ const data = (() => {
         
         const regex = createPattern()
         console.log(regex)
-        possibleWords = data.wordBank.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLetters(possibleWord))
+        data.possibleWords = data.wordBank.filter(possibleWord => regex.exec(possibleWord) && containsMisplacedLetters(possibleWord))
         console.log(possibleWords)
     }  
 
@@ -447,7 +447,7 @@ const main = (() => {
         }
     }
 
-
+    
     function isActiveGame() {
         return activeGame
     }
@@ -463,7 +463,8 @@ const main = (() => {
 main.setupGame()
 
 
-// todo: show list of "most likely words" in modal
+// TODO: show list of "most likely words" in modal
+
 
 // idea: refactor 'show modal' to work based on the event trigger (i.e. of 'show word btn') rather than message data type
 
@@ -473,9 +474,6 @@ main.setupGame()
 
 // thought: could misplaced be an string rather than an array?
 
-// idea: give messages a fade effect
-
-// stopped at: // bugs in logic of wordlist and data structures for letters
-    
+// idea: give messages a fade effect    
 
 
